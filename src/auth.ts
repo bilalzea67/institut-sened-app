@@ -3,22 +3,19 @@ import Credentials from "next-auth/providers/credentials"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
-import { Role } from "@prisma/client"
+import { authConfig } from "./auth.config"
 
 declare module "next-auth" {
   interface Session {
     user: {
       id: string
-      role: Role
+      role: "STUDENT" | "ADMIN"
     } & DefaultSession["user"]
-  }
-
-  interface User {
-    role: Role
   }
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -36,25 +33,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             id: user.id,
             email: user.email,
             name: `${user.firstName} ${user.lastName}`,
-            role: user.role
+            role: user.role as any
           }
         }
-
         return null
       },
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    ...authConfig.callbacks,
+    async jwt({ token, user }) {
       if (user) {
-        token.role = user.role
+        token.role = (user as any).role
         token.id = user.id
       }
       return token
     },
-    session({ session, token }) {
+    async session({ session, token }) {
       if (session.user) {
-        session.user.role = token.role as Role;
+        session.user.role = token.role as any;
         session.user.id = token.id as string;
       }
       return session
