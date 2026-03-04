@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  /* Laisser Netlify gérer le déploiement sans mode standalone forcé */
 };
 
 export default nextConfig;
