@@ -31,7 +31,7 @@ export async function createUser(formData: FormData) {
 
   try {
     await prisma.user.create({
-      data: { email, passwordHash, firstName, lastName, role },
+      data: { email, passwordHash, firstName, lastName, role: role as any },
     })
     revalidatePath("/admin/users")
     return { success: true }
