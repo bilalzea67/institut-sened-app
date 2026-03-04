@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
+import { Role } from "@prisma/client"
 
 const UserSchema = z.object({
   email: z.string().email(),
@@ -31,7 +32,13 @@ export async function createUser(formData: FormData) {
 
   try {
     await prisma.user.create({
-      data: { email, passwordHash, firstName, lastName, role: role as any },
+      data: { 
+        email, 
+        passwordHash, 
+        firstName, 
+        lastName, 
+        role: role as Role 
+      },
     })
     revalidatePath("/admin/users")
     return { success: true }
