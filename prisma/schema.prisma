@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:Nhf.67100%26%2A@db.jithyrqfagjtnnflbxsh.supabase.co:5432/postgres?sslmode=require"
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  role          Role      @default(STUDENT)
+  firstName     String
+  lastName      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  enrollments   Enrollment[]
+  progress      Progress[]
+  quizResults   QuizResult[]
+  quranTracking QuranTracking[]
+  quranReports  QuranReport[]
+  resetTokens   ResetToken[]
+}
+
+model ResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  levels      Level[]
+}
+
+model Level {
+  id            String   @id @default(cuid())
+  moduleId      String
+  module        Module   @relation(fields: [moduleId], references: [id])
+  name          String
+  requiredBooks String?
+
+  enrollments   Enrollment[]
+  sessions      Session[]
+  resources     Resource[]
+  notifications Notification[]
+}
+
+model Enrollment {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+  levelId String
+  level   Level  @relation(fields: [levelId], references: [id])
+
+  @@unique([userId, levelId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  levelId   String
+  level     Level    @relation(fields: [levelId], references: [id])
+  title     String
+  startTime DateTime
+  endTime   DateTime
+  liveUrl   String?
+  replayUrl String?
+
+  resources Resource[]
+  progress  Progress[]
+  quizzes   Quiz[]
+}
+
+model Resource {
+  id            String   @id @default(cuid())
+  levelId       String
+  level         Level    @relation(fields: [levelId], references: [id])
+  sessionId     String?
+  session       Session? @relation(fields: [sessionId], references: [id])
+  title         String
+  url           String
+  isAnnualPack  Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+model Progress {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  sessionId   String
+  session     Session  @relation(fields: [sessionId], references: [id])
+  completedAt DateTime @default(now())
+
+  @@unique([userId, sessionId])
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  sessionId   String
+  session     Session  @relation(fields: [sessionId], references: [id])
+  title     String
+  questions   Json     // Supporté nativement par Postgres
+  createdAt   DateTime @default(now())
+
+  results     QuizResult[]
+}
+
+model QuizResult {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  score     Float
+  passed    Boolean
+  createdAt DateTime @default(now())
+}
+
+model QuranTracking {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime @default(now())
+  homework  String?
+  remarks   String?
+  status    String?  // EXCELLENT, BIEN, etc.
+}
+
+model QuranReport {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  term      String   // Trimestre 1, etc.
+  checklist Json     // Supporté nativement par Postgres
+  notes     String?
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  levelId   String?
+  level     Level?   @relation(fields: [levelId], references: [id])
+  title     String
+  message   String
+  createdAt DateTime @default(now())
+}
