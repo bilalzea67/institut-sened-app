@@ -4,4 +4,3 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  NETLIFY_NEXT_PLUGIN_SKIP_INSTALL = "true" # Force Netlify à utiliser son Runtime interne plus récent
