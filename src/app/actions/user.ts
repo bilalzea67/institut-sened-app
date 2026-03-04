@@ -1,4 +1,3 @@
-"use client" // This is a mistake, server actions don't have "use client"
 "use server"
 
 import prisma from "@/lib/prisma"
