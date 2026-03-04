@@ -4,7 +4,7 @@ import Credentials from "next-auth/providers/credentials"
 export const authConfig = {
   providers: [
     Credentials({
-      async authorize(credentials) {
+      async authorize() {
         // La logique réelle restera dans auth.ts pour ne pas polluer le middleware
         return null
       },
